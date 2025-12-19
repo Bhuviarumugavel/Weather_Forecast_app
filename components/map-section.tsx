@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Download, Layers } from "lucide-react"
-import { useWeather } from "@/lib/weather-context"
-import { DataTable } from "./data-table"
-import dynamic from "next/dynamic"
-import { Skeleton } from "@/components/ui/skeleton"
+import dynamic from "next/dynamic";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Download, Layers } from "lucide-react";
+import { useWeather } from "@/lib/weather-context";
+import { DataTable } from "./data-table";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const WeatherMap = dynamic(() => import("./weather-map"), {
   ssr: false,
@@ -15,10 +15,10 @@ const WeatherMap = dynamic(() => import("./weather-map"), {
       <Skeleton className="w-full h-full" />
     </div>
   ),
-})
+});
 
 export function MapSection() {
-  const { filteredData, isLoading } = useWeather()
+  const { filteredData, isLoading } = useWeather();
 
   return (
     <>
@@ -27,8 +27,11 @@ export function MapSection() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-lg">Interactive Weather Map</CardTitle>
-              <p className="text-xs text-muted-foreground mt-1">{filteredData.length} location(s) displayed</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {filteredData.length} location(s) displayed
+              </p>
             </div>
+
             <div className="flex items-center gap-2">
               <Button size="sm" variant="outline">
                 <Layers className="h-4 w-4 mr-2" />
@@ -40,14 +43,15 @@ export function MapSection() {
             </div>
           </div>
         </CardHeader>
+
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="relative bg-muted aspect-video md:aspect-[16/10] lg:aspect-auto lg:h-[calc(100vh-280px)]">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                  <p className="text-sm text-muted-foreground">Loading weather data...</p>
-                </div>
+            <div className="relative bg-muted aspect-video md:aspect-[16/10] lg:aspect-auto lg:h-[calc(100vh-280px)] flex items-center justify-center">
+              <div className="text-center">
+                <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground">
+                  Loading weather data…
+                </p>
               </div>
             </div>
           ) : (
@@ -56,7 +60,8 @@ export function MapSection() {
         </CardContent>
       </Card>
 
-      <DataTable />
+      {/* ✅ Table rendered only when data exists */}
+      {filteredData.length > 0 && <DataTable />}
     </>
-  )
+  );
 }

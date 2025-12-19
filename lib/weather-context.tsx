@@ -1,69 +1,79 @@
-"use client"
+"use client";
 
-import { createContext, useContext, useState, type ReactNode } from "react"
+import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 
 export type WeatherDataRow = {
-  State: string
-  District: string
-  Block: string
-  Village: string
-  Latitude: number
-  Longitude: number
-  Rain: number
-  Tmax: number
-  Tmin: number
-  RH: number
-  Wind_Speed: number
-  ForecastDate: string
-}
+  State: string;
+  District: string;
+  Block: string;
+  Village: string;
+  Latitude: number;
+  Longitude: number;
+  Rain: number;
+  Tmax: number;
+  Tmin: number;
+  RH: number;
+  Wind_Speed: number;
+  ForecastDate: string;
+};
 
 export type WeatherFilters = {
-  state: string
-  district: string
-  block: string
-  village: string
-  forecastDate: string
-}
+  state: string;
+  district: string;
+  block: string;
+  village: string;
+  forecastDate: string;
+};
 
 type WeatherContextType = {
-  weatherData: WeatherDataRow[]
-  setWeatherData: (data: WeatherDataRow[]) => void
-  filters: WeatherFilters
-  setFilters: (filters: WeatherFilters) => void
-  filteredData: WeatherDataRow[]
-  availableDates: string[]
-  isLoading: boolean
-  setIsLoading: (loading: boolean) => void
-  selectedRow: WeatherDataRow | null
-  setSelectedRow: (row: WeatherDataRow | null) => void
-}
+  weatherData: WeatherDataRow[];
+  setWeatherData: React.Dispatch<React.SetStateAction<WeatherDataRow[]>>;
 
-const WeatherContext = createContext<WeatherContextType | undefined>(undefined)
+  filters: WeatherFilters;
+  setFilters: React.Dispatch<React.SetStateAction<WeatherFilters>>;
+
+  filteredData: WeatherDataRow[];
+  availableDates: string[];
+
+  isLoading: boolean;
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
+
+  selectedRow: WeatherDataRow | null;
+  setSelectedRow: React.Dispatch<React.SetStateAction<WeatherDataRow | null>>;
+};
+
+const WeatherContext = createContext<WeatherContextType | undefined>(undefined);
 
 export function WeatherProvider({ children }: { children: ReactNode }) {
-  const [weatherData, setWeatherData] = useState<WeatherDataRow[]>([])
+  const [weatherData, setWeatherData] = useState<WeatherDataRow[]>([]);
   const [filters, setFilters] = useState<WeatherFilters>({
     state: "",
     district: "",
     block: "",
     village: "",
     forecastDate: "",
-  })
-  const [isLoading, setIsLoading] = useState(false)
-  const [selectedRow, setSelectedRow] = useState<WeatherDataRow | null>(null)
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedRow, setSelectedRow] = useState<WeatherDataRow | null>(null);
 
-  // Get available forecast dates from data
-  const availableDates = Array.from(new Set(weatherData.map((row) => row.ForecastDate))).sort()
+  // ✅ Memoized available dates
+  const availableDates = useMemo(
+    () =>
+      Array.from(new Set(weatherData.map((row) => row.ForecastDate))).sort(),
+    [weatherData]
+  );
 
-  // Filter data based on current filters
-  const filteredData = weatherData.filter((row) => {
-    if (filters.forecastDate && row.ForecastDate !== filters.forecastDate) return false
-    if (filters.state && row.State !== filters.state) return false
-    if (filters.district && row.District !== filters.district) return false
-    if (filters.block && row.Block !== filters.block) return false
-    if (filters.village && row.Village !== filters.village) return false
-    return true
-  })
+  // ✅ Memoized filtering (PERFORMANCE FIX)
+  const filteredData = useMemo(() => {
+    return weatherData.filter((row) => {
+      if (filters.forecastDate && row.ForecastDate !== filters.forecastDate) return false;
+      if (filters.state && row.State !== filters.state) return false;
+      if (filters.district && row.District !== filters.district) return false;
+      if (filters.block && row.Block !== filters.block) return false;
+      if (filters.village && row.Village !== filters.village) return false;
+      return true;
+    });
+  }, [weatherData, filters]);
 
   return (
     <WeatherContext.Provider
@@ -82,13 +92,13 @@ export function WeatherProvider({ children }: { children: ReactNode }) {
     >
       {children}
     </WeatherContext.Provider>
-  )
+  );
 }
 
 export function useWeather() {
-  const context = useContext(WeatherContext)
+  const context = useContext(WeatherContext);
   if (!context) {
-    throw new Error("useWeather must be used within a WeatherProvider")
+    throw new Error("useWeather must be used within a WeatherProvider");
   }
-  return context
+  return context;
 }
